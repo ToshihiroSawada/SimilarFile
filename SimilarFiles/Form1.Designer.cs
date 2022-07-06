@@ -32,8 +32,6 @@
             this.match_list = new System.Windows.Forms.DataGridView();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.folder_list_table = new System.Windows.Forms.DataGridView();
             this.search = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.reset_button = new System.Windows.Forms.Button();
@@ -63,12 +61,11 @@
             this.match_list.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.match_list.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.match_list.ColumnHeadersHeight = 29;
             this.match_list.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1,
-            this.Column2,
-            this.Column3,
-            this.Column4});
+            this.Column2});
             this.match_list.Location = new System.Drawing.Point(0, 201);
             this.match_list.Name = "match_list";
             this.match_list.ReadOnly = true;
@@ -87,31 +84,13 @@
             this.Column1.MinimumWidth = 6;
             this.Column1.Name = "Column1";
             this.Column1.ReadOnly = true;
-            this.Column1.Width = 211;
             // 
             // Column2
             // 
-            this.Column2.HeaderText = "ファイル1";
+            this.Column2.HeaderText = "パス2";
             this.Column2.MinimumWidth = 6;
             this.Column2.Name = "Column2";
             this.Column2.ReadOnly = true;
-            this.Column2.Width = 211;
-            // 
-            // Column3
-            // 
-            this.Column3.HeaderText = "パス2";
-            this.Column3.MinimumWidth = 6;
-            this.Column3.Name = "Column3";
-            this.Column3.ReadOnly = true;
-            this.Column3.Width = 210;
-            // 
-            // Column4
-            // 
-            this.Column4.HeaderText = "ファイル2";
-            this.Column4.MinimumWidth = 6;
-            this.Column4.Name = "Column4";
-            this.Column4.ReadOnly = true;
-            this.Column4.Width = 211;
             // 
             // folder_list_table
             // 
@@ -258,18 +237,18 @@
             this.削除ToolStripMenuItem,
             this.開くToolStripMenuItem1});
             this.CellRightClickMenu.Name = "contextMenuStrip1";
-            this.CellRightClickMenu.Size = new System.Drawing.Size(211, 80);
+            this.CellRightClickMenu.Size = new System.Drawing.Size(109, 52);
             // 
             // 削除ToolStripMenuItem
             // 
             this.削除ToolStripMenuItem.Name = "削除ToolStripMenuItem";
-            this.削除ToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.削除ToolStripMenuItem.Size = new System.Drawing.Size(108, 24);
             this.削除ToolStripMenuItem.Text = "削除";
             // 
             // 開くToolStripMenuItem1
             // 
             this.開くToolStripMenuItem1.Name = "開くToolStripMenuItem1";
-            this.開くToolStripMenuItem1.Size = new System.Drawing.Size(210, 24);
+            this.開くToolStripMenuItem1.Size = new System.Drawing.Size(108, 24);
             this.開くToolStripMenuItem1.Text = "開く";
             // 
             // search_list
@@ -314,14 +293,12 @@
         private ToolStripMenuItem 閉じるToolStripMenuItem;
         private ToolStripMenuItem 終了ToolStripMenuItem;
         private ProgressBar progressBar1;
-        private DataGridViewTextBoxColumn Column1;
-        private DataGridViewTextBoxColumn Column2;
-        private DataGridViewTextBoxColumn Column3;
-        private DataGridViewTextBoxColumn Column4;
         private ToolStripMenuItem DBファイルToolStripMenuItem1;
         private ToolStripMenuItem フォルダーToolStripMenuItem;
         private ContextMenuStrip CellRightClickMenu;
         private ToolStripMenuItem 削除ToolStripMenuItem;
         private ToolStripMenuItem 開くToolStripMenuItem1;
+        private DataGridViewTextBoxColumn Column1;
+        private DataGridViewTextBoxColumn Column2;
     }
 }

@@ -1,8 +1,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Data.SQLite;
-using System;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace SimilarFiles
 {
@@ -13,6 +12,8 @@ namespace SimilarFiles
         public search_list()
         {
             InitializeComponent();
+
+            Debug.Print("Administrator? : " + System.Security.Principal.WindowsBuiltInRole.Administrator.ToString());
         }
 
         private string select_folder()
@@ -103,86 +104,115 @@ namespace SimilarFiles
         {
             //folder_list_tableのデータを取り出す
             int line = folder_list_table.Rows.Count - 1;
-            string[] folder_list = new string[line];
+            var folder_list = new List<string>();
             for (int i = 0; i < line; i++)
             {
-                folder_list[i] = folder_list_table.Rows[i].Cells[0].Value.ToString();
+                folder_list.Add(folder_list_table.Rows[i].Cells[0].Value.ToString());
             }
 
             //指定されたフォルダー以下のフォルダーとファイルの一覧を取り出す
-            List<string> files = new List<string>();
+            var files = new List<string>();
             //Stack<string> folders = new Stack<string>();
-            List<string> folders = new List<string>();
-            foreach (string folder in folder_list)
+            var folders = new List<string>();
+            var getHashFiles = new List<string>();
+            //foreach (string folder in folder_list)
+            //{
+            try
             {
-                try
-                {
-                    //folders.Add(folder);
-                    folders.AddRange(Directory.GetDirectories(
-                        folder, "*", SearchOption.TopDirectoryOnly
-                    ));
-                }
-                catch (Exception err)
-                {
-                    Debug.Print(err.ToString());
-                    continue;
-                }
-
+                //folders.Add(folder);
+                //folders.AddRange(Directory.GetDirectories(
+                //    folder, "*", SearchOption.TopDirectoryOnly
+                //)) ;
+                folders.AddRange(getAllDirectories(folder_list));
             }
+            catch (Exception err)
+            {
+                Debug.Print(err.ToString());
+                //continue;
+            }
+
+            //}
+            Debug.Print("Folder!!!! : ");
             Debug.Print(string.Join("\n  ", folders));
             string[] fileList;
             foreach (string folder in folder_list)
             {
-                fileList = Directory.GetFiles(folder);
-                foreach (string st in fileList)
-                {
-                    files.Add(st);
-                }
-
-            }
-            foreach (string folder in folders)
-            {
                 try
                 {
-                    //パス内に$が含まれている場合、システム領域のためスキップ
-                    if (folder.IndexOf("$") > 0)
+                    fileList = Directory.GetFiles(folder);
+                    foreach (string st in fileList)
                     {
-                        continue;
+                        try
+                        {
+                            files.Add(st);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
                     }
-                    fileList = Directory.GetFiles(
-                        folder, "*", SearchOption.AllDirectories
-                    );
                 }
                 catch
                 {
                     continue;
                 }
-                foreach (string st in fileList)
+
+            }
+            string[] getHashFileList;
+            foreach (string folder in folders)
+            {
+                Debug.Print("Folder : "+folder);
+
+                try
                 {
-                    files.Add(st);
+                    getHashFileList = Directory.GetFiles(
+                        folder, "*", SearchOption.TopDirectoryOnly
+                    );
+                }
+                catch (Exception err)
+                {
+                    Debug.Print("3 continue!! : " + folder);
+                    Debug.Print(err.ToString());
+                    continue;
+                }
+                foreach (string st in getHashFileList)
+                {
+                    getHashFiles.Add(st);
                 }
             }
+            Debug.Print("getHashFileList" + string.Join("  \n", getHashFiles));
             progressBar1.Value = 0;
-            progressBar1.Maximum = files.Count;
+            progressBar1.Maximum = getHashFiles.Count;
             progressBar1.Visible = true;
             //ファイルハッシュ化し、listに追加
             var j = 0;
-            List<List<string>> data_list = new List<List<string>>();
-            foreach (var file in files)
+            var data_list = new List<List<string>>();
+            foreach (var file in getHashFiles)
             {
+                Debug.Print(file);
                 try
                 {
                     var data = await Task<List<string>>.Factory.StartNew(() =>
                     {
                         List<string> data = new List<string>();
-
                         try
                         {
+                            string file_name = Path.GetFileName(file);
+                            if (file_name == "desktop.ini")
+                            {
+                                return data;
+                            }
+                            var setFile = new FileInfo(file);
+                            long fileSize = setFile.Length;
+                            if(fileSize == 0)
+                            {
+                                return data;
+                            }
                             FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                             using MD5 ha = MD5.Create();
                             var hash = ha.ComputeHash(fs);
                             string hash_text = "";
-                            string file_name = Path.GetFileName(file);
+                            
 
                             hash_text = Convert.ToBase64String(hash);
                             data.Add(file);
@@ -210,6 +240,7 @@ namespace SimilarFiles
                 catch (Exception err)
                 {
                     Debug.Print(err.ToString());
+                    Debug.Print("4 continue!! : " + file);
                     continue;
                 }
             }
@@ -246,6 +277,7 @@ namespace SimilarFiles
                         catch (Exception err)
                         {
                             Debug.Print(err.ToString());
+                            Debug.Print("5 continue!! : " + list);
                             continue;
                         }
                     }
@@ -263,48 +295,46 @@ namespace SimilarFiles
         private void ReadDBData(SQLiteConnectionStringBuilder sqlCSB)
         {
             //DBからハッシュが一致したファイルを取り出す
-            using (var cn = new SQLiteConnection(sqlCSB.ToString()))
-            {
-                cn.Open();
+            using var cn = new SQLiteConnection(sqlCSB.ToString());
+            cn.Open();
 
-                using (var cmd = new SQLiteCommand(cn))
-                {
-                    cmd.CommandText = $@"
-                        SELECT A.path, A.name, B.path, B.name 
+            using (var cmd = new SQLiteCommand(cn))
+            {
+                cmd.CommandText = @"
+                        SELECT A.path, B.path 
                         FROM file_hash AS A 
                         LEFT OUTER JOIN file_hash AS B 
                         ON A.hash = B.hash 
                         AND A.path != B.path 
                         WHERE B.name IS NOT NULL;
                     ";
-                    SQLiteDataReader dr = cmd.ExecuteReader();
+                SQLiteDataReader dr = cmd.ExecuteReader();
 
-                    List<string[]> list = new List<string[]>();
-                    try
+                List<string[]> list = new List<string[]>();
+                try
+                {
+                    for (int i = 0; dr.Read(); i++)
                     {
-                        for (int i = 0; dr.Read(); i++)
+                        string[] column = new string[dr.FieldCount];
+                        for (int j = 0; j < dr.FieldCount; j++)
                         {
-                            string[] column = new string[dr.FieldCount];
-                            for (int j = 0; j < dr.FieldCount; j++)
-                            {
-                                column[j] = dr[j].ToString();
-                            }
-                            list.Add(column);
+                            column[j] = dr[j].ToString();
                         }
+                        list.Add(column);
+                    }
 
-                        foreach (string[] mlist in list)
-                        {
-                            match_list.Rows.Add(mlist);
-                        }
-                    }
-                    catch (Exception err)
+                    foreach (string[] mlist in list)
                     {
-                        Debug.Print(err.ToString());
+                        match_list.Rows.Add(mlist);
                     }
-                    cmd.Dispose();
                 }
-                cn.Close();
+                catch (Exception err)
+                {
+                    Debug.Print(err.ToString());
+                }
+                cmd.Dispose();
             }
+            cn.Close();
         }
 
         private void match_list_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -370,6 +400,68 @@ namespace SimilarFiles
                 Point p = Cursor.Position;
                 CellRightClickMenu.Show(p);
             }
+        }
+
+        private List<string> getAllDirectories(List<string> list)
+        {
+            //ファイルハッシュを取得しないスキップリスト
+            var skipList = new List<string> {@"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
+            var pattern = @".*AppData.*|.*\$.*";
+            var regex = new Regex(pattern);
+            var directories = new List<string>();
+            try
+            {
+                foreach(var skipPath in skipList)
+                {
+                    list.Remove(skipPath);
+                }
+
+                foreach(var path in list)
+                {
+                    if (regex.IsMatch(path))
+                    {
+                        list.Remove(path);
+                    }
+                }
+
+                foreach (string path in list)
+                {
+                    //検索したくないディレクトリ(システムファイルなど)をスキップし、リストから削除
+                    //if (skipList.Contains(path))
+                    //{
+                        //Debug.Print("1 continue!! : " + path);
+                        //list.Remove(path);
+                    //    continue;
+                    //}
+                    //else if (path.IndexOf("$") > 0)
+                    //{
+                        //Debug.Print("2 continue!! : " + path);
+                        //list.Remove(path);
+                    //    continue;
+                    //}
+                    try
+                    {
+                        directories.AddRange(Directory.GetDirectories(
+                            path, "*", SearchOption.TopDirectoryOnly
+                        ));
+                    }
+                    catch
+                    {
+                        Debug.Print("100 conrinue!! : " + path);
+                        continue;
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                Debug.Print(err.ToString());
+            }
+            if (directories.Count > 0)
+            {
+                list.AddRange(getAllDirectories(directories));
+            }
+            Debug.Print("iiiiiiiiiiiiiiiiii"+ directories.Count);
+            return list;
         }
     }
 }
