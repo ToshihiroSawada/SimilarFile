@@ -112,26 +112,17 @@ namespace SimilarFiles
 
             //指定されたフォルダー以下のフォルダーとファイルの一覧を取り出す
             var files = new List<string>();
-            //Stack<string> folders = new Stack<string>();
             var folders = new List<string>();
             var getHashFiles = new List<string>();
-            //foreach (string folder in folder_list)
-            //{
             try
             {
-                //folders.Add(folder);
-                //folders.AddRange(Directory.GetDirectories(
-                //    folder, "*", SearchOption.TopDirectoryOnly
-                //)) ;
                 folders.AddRange(getAllDirectories(folder_list));
             }
             catch (Exception err)
             {
                 Debug.Print(err.ToString());
-                //continue;
             }
 
-            //}
             Debug.Print("Folder!!!! : ");
             Debug.Print(string.Join("\n  ", folders));
             string[] fileList;
@@ -426,19 +417,6 @@ namespace SimilarFiles
 
                 foreach (string path in list)
                 {
-                    //検索したくないディレクトリ(システムファイルなど)をスキップし、リストから削除
-                    //if (skipList.Contains(path))
-                    //{
-                        //Debug.Print("1 continue!! : " + path);
-                        //list.Remove(path);
-                    //    continue;
-                    //}
-                    //else if (path.IndexOf("$") > 0)
-                    //{
-                        //Debug.Print("2 continue!! : " + path);
-                        //list.Remove(path);
-                    //    continue;
-                    //}
                     try
                     {
                         directories.AddRange(Directory.GetDirectories(
