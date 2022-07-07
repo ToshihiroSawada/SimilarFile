@@ -73,7 +73,7 @@
             this.match_list.RowTemplate.Height = 29;
             this.match_list.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.match_list.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.match_list.Size = new System.Drawing.Size(896, 358);
+            this.match_list.Size = new System.Drawing.Size(1262, 473);
             this.match_list.TabIndex = 1;
             this.match_list.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.match_list_CellMouseDoubleClick);
             this.match_list.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.match_list_CellMouseDown);
@@ -104,7 +104,7 @@
             this.folder_list_table.Name = "folder_list_table";
             this.folder_list_table.RowHeadersWidth = 51;
             this.folder_list_table.RowTemplate.Height = 29;
-            this.folder_list_table.Size = new System.Drawing.Size(896, 125);
+            this.folder_list_table.Size = new System.Drawing.Size(1262, 125);
             this.folder_list_table.TabIndex = 2;
             // 
             // search
@@ -115,7 +115,8 @@
             // 
             // reset_button
             // 
-            this.reset_button.Location = new System.Drawing.Point(790, 166);
+            this.reset_button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.reset_button.Location = new System.Drawing.Point(1156, 166);
             this.reset_button.Name = "reset_button";
             this.reset_button.Size = new System.Drawing.Size(94, 29);
             this.reset_button.TabIndex = 3;
@@ -125,7 +126,8 @@
             // 
             // remove_button
             // 
-            this.remove_button.Location = new System.Drawing.Point(690, 166);
+            this.remove_button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.remove_button.Location = new System.Drawing.Point(1056, 166);
             this.remove_button.Name = "remove_button";
             this.remove_button.Size = new System.Drawing.Size(94, 29);
             this.remove_button.TabIndex = 4;
@@ -135,7 +137,8 @@
             // 
             // add_button
             // 
-            this.add_button.Location = new System.Drawing.Point(590, 166);
+            this.add_button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.add_button.Location = new System.Drawing.Point(956, 166);
             this.add_button.Name = "add_button";
             this.add_button.Size = new System.Drawing.Size(94, 29);
             this.add_button.TabIndex = 5;
@@ -170,7 +173,7 @@
             this.ファイルToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(896, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1262, 28);
             this.menuStrip1.TabIndex = 8;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -224,9 +227,9 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(0, 440);
+            this.progressBar1.Location = new System.Drawing.Point(0, 555);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(896, 29);
+            this.progressBar1.Size = new System.Drawing.Size(1262, 29);
             this.progressBar1.TabIndex = 9;
             this.progressBar1.Visible = false;
             // 
@@ -255,7 +258,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(896, 558);
+            this.ClientSize = new System.Drawing.Size(1262, 673);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.stop_button);
             this.Controls.Add(this.start_button);

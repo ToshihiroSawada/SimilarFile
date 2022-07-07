@@ -12,8 +12,7 @@ namespace SimilarFiles
         public search_list()
         {
             InitializeComponent();
-
-            Debug.Print("Administrator? : " + System.Security.Principal.WindowsBuiltInRole.Administrator.ToString());
+            match_list.AllowUserToAddRows = false;
         }
 
         private string select_folder()
@@ -123,25 +122,13 @@ namespace SimilarFiles
                 Debug.Print(err.ToString());
             }
 
-            Debug.Print("Folder!!!! : ");
-            Debug.Print(string.Join("\n  ", folders));
             string[] fileList;
             foreach (string folder in folder_list)
             {
                 try
                 {
                     fileList = Directory.GetFiles(folder);
-                    foreach (string st in fileList)
-                    {
-                        try
-                        {
-                            files.Add(st);
-                        }
-                        catch
-                        {
-                            continue;
-                        }
-                    }
+                    files.AddRange(fileList);
                 }
                 catch
                 {
@@ -393,26 +380,38 @@ namespace SimilarFiles
             }
         }
 
-        private List<string> getAllDirectories(List<string> list)
+        private List<string> getAllDirectories(List<string> argList)
         {
             //ファイルハッシュを取得しないスキップリスト
             var skipList = new List<string> {@"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
             var pattern = @".*AppData.*|.*\$.*";
+            var list = new List<string>();
             var regex = new Regex(pattern);
             var directories = new List<string>();
             try
             {
-                foreach(var skipPath in skipList)
+                foreach(var path in argList)
                 {
-                    list.Remove(skipPath);
-                }
+                    var matchFlug = false;
 
-                foreach(var path in list)
-                {
                     if (regex.IsMatch(path))
                     {
-                        list.Remove(path);
+                        continue;
                     }
+
+                    foreach(var i in skipList)
+                    {
+                        if (path.Contains(i))
+                        {
+                            matchFlug = true;
+                        }
+                    }
+                    if (matchFlug)
+                    {
+                        continue;
+                    }
+
+                    list.Add(path);
                 }
 
                 foreach (string path in list)
