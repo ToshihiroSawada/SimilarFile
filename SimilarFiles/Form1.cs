@@ -13,6 +13,7 @@ namespace SimilarFiles
         {
             InitializeComponent();
             match_list.AllowUserToAddRows = false;
+            folder_list_table.AllowUserToAddRows = false;
         }
 
         private string select_folder()
@@ -66,8 +67,12 @@ namespace SimilarFiles
             start_button_Click(sender, e, match_list);
         }
 
-        private async void start_button_Click(object sender, EventArgs e, DataGridView match_list)
+        private void start_button_Click(object sender, EventArgs e, DataGridView match_list)
         {
+            if (folder_list_table.RowCount < 1)
+            {
+                return;
+            }
             match_list.Rows.Clear();
             string db_path = "./data.db";
             if (File.Exists(db_path))
@@ -102,7 +107,7 @@ namespace SimilarFiles
         async private void Hashing()
         {
             //folder_list_tableのデータを取り出す
-            int line = folder_list_table.Rows.Count - 1;
+            int line = folder_list_table.Rows.Count;
             var folder_list = new List<string>();
             for (int i = 0; i < line; i++)
             {
@@ -139,8 +144,6 @@ namespace SimilarFiles
             string[] getHashFileList;
             foreach (string folder in folders)
             {
-                Debug.Print("Folder : "+folder);
-
                 try
                 {
                     getHashFileList = Directory.GetFiles(
@@ -158,7 +161,6 @@ namespace SimilarFiles
                     getHashFiles.Add(st);
                 }
             }
-            Debug.Print("getHashFileList" + string.Join("  \n", getHashFiles));
             progressBar1.Value = 0;
             progressBar1.Maximum = getHashFiles.Count;
             progressBar1.Visible = true;
@@ -167,7 +169,6 @@ namespace SimilarFiles
             var data_list = new List<List<string>>();
             foreach (var file in getHashFiles)
             {
-                Debug.Print(file);
                 try
                 {
                     var data = await Task<List<string>>.Factory.StartNew(() =>
@@ -283,9 +284,11 @@ namespace SimilarFiles
                         FROM file_hash AS A 
                         LEFT OUTER JOIN file_hash AS B 
                         ON A.hash = B.hash 
-                        AND A.path != B.path 
-                        WHERE B.name IS NOT NULL;
+                        AND A.path != B.path
+                        WHERE B.name IS NOT NULL
+                        GROUP BY A.hash , B.hash;
                     ";
+
                 SQLiteDataReader dr = cmd.ExecuteReader();
 
                 List<string[]> list = new List<string[]>();
@@ -317,24 +320,16 @@ namespace SimilarFiles
 
         private void match_list_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            DataGridViewCell onePreviousCell;
-            int even_col = (e.ColumnIndex + 1) % 2;
-            if (even_col % 2 == 0)
-            {
+            DataGridViewCell onePreviousCell = null;
                 try
                 {
-                    onePreviousCell = match_list.Rows[e.RowIndex].Cells[e.ColumnIndex - 1];
+                    onePreviousCell = match_list.Rows[e.RowIndex].Cells[e.ColumnIndex];
                 }
                 catch (Exception err)
                 {
                     Debug.Print(err.ToString());
                     return;
                 }
-            }
-            else
-            {
-                onePreviousCell = match_list.Rows[e.RowIndex].Cells[e.ColumnIndex];
-            }
             try
             {
                 string path = onePreviousCell.Value.ToString();
@@ -351,17 +346,19 @@ namespace SimilarFiles
             string path;
             using (var ofd = new OpenFileDialog()
             {
-                Title = "フォルダを選択してください",
-                InitialDirectory = @""
+                Title = "DBファイルを選択してください",
+                Filter = "DBファイル(*.db)|*.db",
+                InitialDirectory = @"",
             })
             {
                 if (ofd.ShowDialog() != DialogResult.OK)
                 {
                     return;
                 }
+                path = ofd.FileName;
             }
 
-            var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = "data.db" };
+            var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = path };
             ReadDBData(sqlCSB);
         }
 
@@ -437,7 +434,6 @@ namespace SimilarFiles
             {
                 list.AddRange(getAllDirectories(directories));
             }
-            Debug.Print("iiiiiiiiiiiiiiiiii"+ directories.Count);
             return list;
         }
     }
