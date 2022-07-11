@@ -50,6 +50,7 @@
             this.CellRightClickMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.削除ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.開くToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.match_list)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.folder_list_table)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -254,11 +255,23 @@
             this.開くToolStripMenuItem1.Size = new System.Drawing.Size(108, 24);
             this.開くToolStripMenuItem1.Text = "開く";
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Yu Gothic UI", 19.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label1.Location = new System.Drawing.Point(12, 506);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(182, 46);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "読み込み中";
+            this.label1.Visible = false;
+            // 
             // search_list
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1262, 673);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.stop_button);
             this.Controls.Add(this.start_button);
@@ -271,6 +284,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "search_list";
             this.Text = "SimilarFiles";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.search_list_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.match_list)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.folder_list_table)).EndInit();
             this.menuStrip1.ResumeLayout(false);
@@ -303,5 +317,6 @@
         private ToolStripMenuItem 開くToolStripMenuItem1;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
+        private Label label1;
     }
 }

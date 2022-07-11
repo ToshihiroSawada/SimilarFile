@@ -69,6 +69,7 @@ namespace SimilarFiles
 
         private void start_button_Click(object sender, EventArgs e, DataGridView match_list)
         {
+            PSKILL = false;
             if (folder_list_table.RowCount < 1)
             {
                 return;
@@ -84,13 +85,14 @@ namespace SimilarFiles
                 }
             }
 
-            //stop_buttonクリックできないようにする
+            //stop_button以外クリックできないようにする
             start_button.Enabled = false;
             add_button.Enabled = false;
             remove_button.Enabled = false;
             reset_button.Enabled = false;
             progressBar1.Visible = true;
             progressBar1.Style = ProgressBarStyle.Marquee;
+            label1.Visible = true;
 
             Hashing();
         }
@@ -103,10 +105,12 @@ namespace SimilarFiles
         private void stop_button_Click(object sender, EventArgs e)
         {
             PSKILL = true;
+            label1.Text = "処理停止中。しばらくお待ちください。";
         }
 
         async private void Hashing()
-        { 
+        {
+            label1.Text = "フォルダ一覧取得中...";
             //folder_list_tableのデータを取り出す
             int line = folder_list_table.Rows.Count;
             var folder_list = new List<string>();
@@ -129,6 +133,7 @@ namespace SimilarFiles
                 Debug.Print(err.ToString());
             }
 
+            label1.Text = "ファイル調査中...";
             //ファイルをDBへ追加
             var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = "data.db" };
             using (var cn = new SQLiteConnection(sqlCSB.ToString()))
@@ -254,7 +259,7 @@ namespace SimilarFiles
 
                 ReadDBData(sqlCSB);
                 progressBar1.Visible = false;
-                PSKILL = false;
+                label1.Visible = false;
                 start_button.Enabled = true;
                 add_button.Enabled = true;
                 remove_button.Enabled = true;
@@ -264,6 +269,9 @@ namespace SimilarFiles
 
         private void ReadDBData(SQLiteConnectionStringBuilder sqlCSB)
         {
+            progressBar1.Visible = true;
+            progressBar1.Style = ProgressBarStyle.Marquee;
+            label1.Text = "データ一致ファイル一覧作成中...";
             //DBからハッシュが一致したファイルを取り出す
             using var cn = new SQLiteConnection(sqlCSB.ToString());
             cn.Open();
@@ -284,19 +292,14 @@ namespace SimilarFiles
                 List<string[]> list = new List<string[]>();
                 try
                 {
-                    for (int i = 0; dr.Read(); i++)
+                    while (dr.Read())
                     {
                         string[] column = new string[dr.FieldCount];
                         for (int j = 0; j < dr.FieldCount; j++)
                         {
                             column[j] = dr[j].ToString();
                         }
-                        list.Add(column);
-                    }
-
-                    foreach (string[] mlist in list)
-                    {
-                        match_list.Rows.Add(mlist);
+                        match_list.Rows.Add(column);
                     }
                 }
                 catch (Exception err)
@@ -375,12 +378,12 @@ namespace SimilarFiles
             var list = new List<string>();
             var regex = new Regex(pattern);
             var directories = new List<string>();
-            try
-            {
-                foreach (var path in argList)
-                {
-                    var matchFlug = false;
 
+            foreach (var path in argList)
+            {
+                var matchFlug = false;
+                try
+                {
                     if (regex.IsMatch(path))
                     {
                         continue;
@@ -393,32 +396,34 @@ namespace SimilarFiles
                             matchFlug = true;
                         }
                     }
-                    if (matchFlug)
-                    {
-                        continue;
-                    }
-
-                    list.Add(path);
                 }
-
-                foreach (string path in list)
+                catch (Exception err)
                 {
-                    try
-                    {
-                        directories.AddRange(Directory.GetDirectories(
-                            path, "*", SearchOption.TopDirectoryOnly
-                        ));
-                    }
-                    catch
-                    {
-                        Debug.Print("100 conrinue!! : " + path);
-                        continue;
-                    }
+                    Debug.Print(err.ToString());
+                    continue;
                 }
-            }
-            catch (Exception err)
-            {
-                Debug.Print(err.ToString());
+                if (matchFlug)
+                {
+                    continue;
+                }
+
+                list.Add(path);
+
+                try
+                {
+                    directories.AddRange(Directory.GetDirectories(
+                        path, "*", SearchOption.TopDirectoryOnly
+                    ));
+                }
+                catch
+                {
+                    Debug.Print("100 conrinue!! : " + path);
+                    continue;
+                }
+                if (PSKILL == true)
+                {
+                    return list;
+                }
             }
             if (directories.Count > 0)
             {
@@ -426,6 +431,30 @@ namespace SimilarFiles
                 list.AddRange(data);
             }
             return list;
+        }
+
+        private void search_list_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult dr = MessageBox.Show("保存しますか？", "確認", MessageBoxButtons.YesNo);
+            if (dr == DialogResult.Yes)
+            {
+                using (var sfd = new SaveFileDialog()
+                {
+                    Title = "保存先を選択してください",
+                    FileName = "data.db",
+                    OverwritePrompt = true,
+                    CheckPathExists = true,
+                    Filter = "DBファイル(*.db)|*.db",
+                    InitialDirectory = @"",
+                })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        File.Copy(@"./data.db", sfd.FileName);
+                    }
+                    Debug.Print(sfd.FileName);
+                }
+            }
         }
     }
 }
