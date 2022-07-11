@@ -75,9 +75,13 @@ namespace SimilarFiles
             }
             match_list.Rows.Clear();
             string db_path = "./data.db";
-            if (File.Exists(db_path))
+            DialogResult dr = MessageBox.Show("前回の結果を削除しますか？", "確認", MessageBoxButtons.YesNo);
+            if (dr == DialogResult.Yes)
             {
-                File.Delete(db_path);
+                if (File.Exists(db_path))
+                {
+                    File.Delete(db_path);
+                }
             }
 
             //stop_buttonクリックできないようにする
@@ -85,13 +89,10 @@ namespace SimilarFiles
             add_button.Enabled = false;
             remove_button.Enabled = false;
             reset_button.Enabled = false;
+            progressBar1.Visible = true;
+            progressBar1.Style = ProgressBarStyle.Marquee;
 
             Hashing();
-
-            start_button.Enabled = true;
-            add_button.Enabled = true;
-            remove_button.Enabled = true;
-            reset_button.Enabled = true;
         }
 
         private void 終了ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -105,7 +106,7 @@ namespace SimilarFiles
         }
 
         async private void Hashing()
-        {
+        { 
             //folder_list_tableのデータを取り出す
             int line = folder_list_table.Rows.Count;
             var folder_list = new List<string>();
@@ -120,117 +121,19 @@ namespace SimilarFiles
             var getHashFiles = new List<string>();
             try
             {
-                folders.AddRange(getAllDirectories(folder_list));
+                var data = await Task.Run(() => GetAllDirectories(folder_list));
+                folders.AddRange(data);
             }
             catch (Exception err)
             {
                 Debug.Print(err.ToString());
             }
 
-            string[] fileList;
-            foreach (string folder in folder_list)
-            {
-                try
-                {
-                    fileList = Directory.GetFiles(folder);
-                    files.AddRange(fileList);
-                }
-                catch
-                {
-                    continue;
-                }
-
-            }
-            string[] getHashFileList;
-            foreach (string folder in folders)
-            {
-                try
-                {
-                    getHashFileList = Directory.GetFiles(
-                        folder, "*", SearchOption.TopDirectoryOnly
-                    );
-                }
-                catch (Exception err)
-                {
-                    Debug.Print("3 continue!! : " + folder);
-                    Debug.Print(err.ToString());
-                    continue;
-                }
-                foreach (string st in getHashFileList)
-                {
-                    getHashFiles.Add(st);
-                }
-            }
-            progressBar1.Value = 0;
-            progressBar1.Maximum = getHashFiles.Count;
-            progressBar1.Visible = true;
-            //ファイルハッシュ化し、listに追加
-            var j = 0;
-            var data_list = new List<List<string>>();
-            foreach (var file in getHashFiles)
-            {
-                try
-                {
-                    var data = await Task<List<string>>.Factory.StartNew(() =>
-                    {
-                        List<string> data = new List<string>();
-                        try
-                        {
-                            string file_name = Path.GetFileName(file);
-                            if (file_name == "desktop.ini")
-                            {
-                                return data;
-                            }
-                            var setFile = new FileInfo(file);
-                            long fileSize = setFile.Length;
-                            if(fileSize == 0)
-                            {
-                                return data;
-                            }
-                            FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                            using MD5 ha = MD5.Create();
-                            var hash = ha.ComputeHash(fs);
-                            string hash_text = "";
-                            
-
-                            hash_text = Convert.ToBase64String(hash);
-                            data.Add(file);
-                            data.Add(file_name);
-                            data.Add(hash_text);
-                            ha.Clear();
-                            return data;
-                        }
-                        catch (Exception err)
-                        {
-                            Debug.Print(err.ToString());
-                            return data;
-                        }
-                    });
-                    data_list.Add(data);
-
-                    //ProgressBarの値を増加させる
-                    progressBar1.Value += 1;
-                    j++;
-                    if (PSKILL == true)
-                    {
-                        break;
-                    }
-                }
-                catch (Exception err)
-                {
-                    Debug.Print(err.ToString());
-                    Debug.Print("4 continue!! : " + file);
-                    continue;
-                }
-            }
-
-
             //ファイルをDBへ追加
             var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = "data.db" };
             using (var cn = new SQLiteConnection(sqlCSB.ToString()))
             {
                 cn.Open();
-
                 using (var cmd = new SQLiteCommand(cn))
                 {
                     cmd.CommandText = @"
@@ -242,13 +145,98 @@ namespace SimilarFiles
                     ";
                     cmd.ExecuteNonQuery();
 
-                    foreach (var list in data_list)
+                    string[] fileList;
+                    foreach (string folder in folder_list)
                     {
+                        try
+                        {
+                            fileList = Directory.GetFiles(folder);
+                            files.AddRange(fileList);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+
+                    }
+                    string[] getHashFileList;
+                    foreach (string folder in folders)
+                    {
+                        try
+                        {
+                            getHashFileList = Directory.GetFiles(
+                                folder, "*", SearchOption.TopDirectoryOnly
+                            );
+                        }
+                        catch (Exception err)
+                        {
+                            Debug.Print("3 continue!! : " + folder);
+                            Debug.Print(err.ToString());
+                            continue;
+                        }
+                        foreach (string st in getHashFileList)
+                        {
+                            getHashFiles.Add(st);
+                        }
+                    }
+                    progressBar1.Value = 0;
+                    progressBar1.Maximum = getHashFiles.Count;
+                    progressBar1.Visible = true;
+                    progressBar1.Style = ProgressBarStyle.Continuous;
+                    //ファイルハッシュ化し、listに追加
+                    var j = 0;
+                    foreach (var file in getHashFiles)
+                    {
+                        progressBar1.Value += 1;
+                        var data = await Task.Run(() =>
+                        {
+                            var data = new string[3];
+                            try
+                            {
+                                string file_name = Path.GetFileName(file);
+                                if (file_name == "desktop.ini")
+                                {
+                                    return data;
+                                }
+                                var setFile = new FileInfo(file);
+                                long fileSize = setFile.Length;
+                                if (fileSize == 0)
+                                {
+                                    return data;
+                                }
+                                FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                using MD5 ha = MD5.Create();
+                                var hash = ha.ComputeHash(fs);
+                                string hash_text = "";
+
+
+                                hash_text = Convert.ToBase64String(hash);
+                                data[0] = file;
+                                data[1] = file_name;
+                                data[2] = hash_text;
+                                ha.Clear();
+                                fs.Close();
+                                return data;
+                            }
+                            catch (Exception err)
+                            {
+                                Debug.Print(err.ToString());
+                                return data;
+                            }
+                        });
+
+                        //ProgressBarの値を増加させる
+                        j++;
+                        if (PSKILL == true)
+                        {
+                            break;
+                        }
+
                         try
                         {
                             cmd.CommandText = $@"
                                 INSERT INTO file_hash
-                                VALUES ('{list[0]}', '{list[1]}', '{list[2]}')
+                                VALUES ('{data[0]}', '{data[1]}', '{data[2]}')
                         ";
 
                             cmd.ExecuteNonQuery();
@@ -256,19 +244,22 @@ namespace SimilarFiles
                         catch (Exception err)
                         {
                             Debug.Print(err.ToString());
-                            Debug.Print("5 continue!! : " + list);
+                            Debug.Print("5 continue!! : " + string.Join(", ", data));
                             continue;
                         }
                     }
                     cmd.Dispose();
+                    cn.Close();
                 }
 
-                cn.Close();
+                ReadDBData(sqlCSB);
+                progressBar1.Visible = false;
+                PSKILL = false;
+                start_button.Enabled = true;
+                add_button.Enabled = true;
+                remove_button.Enabled = true;
+                reset_button.Enabled = true;
             }
-
-            ReadDBData(sqlCSB);
-            progressBar1.Visible = false;
-            PSKILL = false;
         }
 
         private void ReadDBData(SQLiteConnectionStringBuilder sqlCSB)
@@ -284,9 +275,8 @@ namespace SimilarFiles
                         FROM file_hash AS A 
                         LEFT OUTER JOIN file_hash AS B 
                         ON A.hash = B.hash 
-                        AND A.path != B.path
+                        AND A.path > B.path
                         WHERE B.name IS NOT NULL
-                        GROUP BY A.hash , B.hash;
                     ";
 
                 SQLiteDataReader dr = cmd.ExecuteReader();
@@ -321,15 +311,15 @@ namespace SimilarFiles
         private void match_list_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             DataGridViewCell onePreviousCell = null;
-                try
-                {
-                    onePreviousCell = match_list.Rows[e.RowIndex].Cells[e.ColumnIndex];
-                }
-                catch (Exception err)
-                {
-                    Debug.Print(err.ToString());
-                    return;
-                }
+            try
+            {
+                onePreviousCell = match_list.Rows[e.RowIndex].Cells[e.ColumnIndex];
+            }
+            catch (Exception err)
+            {
+                Debug.Print(err.ToString());
+                return;
+            }
             try
             {
                 string path = onePreviousCell.Value.ToString();
@@ -377,17 +367,17 @@ namespace SimilarFiles
             }
         }
 
-        private List<string> getAllDirectories(List<string> argList)
+        private async Task<List<string>> GetAllDirectories(List<string> argList)
         {
             //ファイルハッシュを取得しないスキップリスト
-            var skipList = new List<string> {@"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
+            var skipList = new List<string> { @"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
             var pattern = @".*AppData.*|.*\$.*";
             var list = new List<string>();
             var regex = new Regex(pattern);
             var directories = new List<string>();
             try
             {
-                foreach(var path in argList)
+                foreach (var path in argList)
                 {
                     var matchFlug = false;
 
@@ -396,7 +386,7 @@ namespace SimilarFiles
                         continue;
                     }
 
-                    foreach(var i in skipList)
+                    foreach (var i in skipList)
                     {
                         if (path.Contains(i))
                         {
@@ -432,7 +422,8 @@ namespace SimilarFiles
             }
             if (directories.Count > 0)
             {
-                list.AddRange(getAllDirectories(directories));
+                var data = await Task.Run(() => GetAllDirectories(directories));
+                list.AddRange(data);
             }
             return list;
         }
