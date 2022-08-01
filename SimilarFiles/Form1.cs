@@ -309,6 +309,7 @@ namespace SimilarFiles
                 cmd.Dispose();
             }
             cn.Close();
+            progressBar1.Visible = false;
         }
 
         private void match_list_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -373,7 +374,8 @@ namespace SimilarFiles
         private async Task<List<string>> GetAllDirectories(List<string> argList)
         {
             //ファイルハッシュを取得しないスキップリスト
-            var skipList = new List<string> { @"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
+            //var skipList = new List<string> { @"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
+            var skipList = new List<string>();
             var pattern = @".*AppData.*|.*\$.*";
             var list = new List<string>();
             var regex = new Regex(pattern);
