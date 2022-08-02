@@ -5,11 +5,11 @@ using System.Text.RegularExpressions;
 
 namespace SimilarFiles
 {
-    public partial class search_list : Form
+    public partial class SearchList : Form
     {
         public bool PSKILL = false;
 
-        public search_list()
+        public SearchList()
         {
             InitializeComponent();
             match_list.AllowUserToAddRows = false;
@@ -194,7 +194,7 @@ namespace SimilarFiles
                 progressBar1.Value = 0;
                 progressBar1.Maximum = getHashFiles.Count;
                 progressBar1.Visible = true;
-                progressBar1.Style = ProgressBarStyle.Continuous;
+                progressBar1.Style = ProgressBarStyle.Blocks;
                 //ファイルハッシュ化し、listに追加
                 var j = 0;
                 foreach (var file in getHashFiles)

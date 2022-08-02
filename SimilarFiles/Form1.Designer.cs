@@ -1,6 +1,6 @@
 ﻿namespace SimilarFiles
 {
-    partial class search_list
+    partial class SearchList
     {
         /// <summary>
         ///  Required designer variable.
