@@ -105,7 +105,7 @@ namespace SimilarFiles
             Hashing();
         }
 
-        private void 終了ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void EndToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
         }
@@ -341,7 +341,7 @@ namespace SimilarFiles
             }
         }
 
-        private void DBファイルToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void DBFileToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             string path;
             using (var ofd = new OpenFileDialog()
@@ -362,7 +362,7 @@ namespace SimilarFiles
             ReadDBData(sqlCSB);
         }
 
-        private void フォルダーToolStripMenuItem_Click(object sender, EventArgs e)
+        private void FolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AddButton_Click();
         }
@@ -462,5 +462,6 @@ namespace SimilarFiles
                 Debug.Print(sfd.FileName);
             }
         }
+
     }
 }

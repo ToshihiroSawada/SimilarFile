@@ -41,11 +41,11 @@
             this.stop_button = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.ファイルToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.開くToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.DBファイルToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.フォルダーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.閉じるToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.終了ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.DBFileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.FolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CloseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.EndToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.CellRightClickMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.削除ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -181,48 +181,48 @@
             // ファイルToolStripMenuItem
             // 
             this.ファイルToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.開くToolStripMenuItem,
-            this.閉じるToolStripMenuItem,
-            this.終了ToolStripMenuItem});
+            this.OpenToolStripMenuItem,
+            this.CloseToolStripMenuItem,
+            this.EndToolStripMenuItem});
             this.ファイルToolStripMenuItem.Name = "ファイルToolStripMenuItem";
             this.ファイルToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.ファイルToolStripMenuItem.Text = "ファイル";
             // 
-            // 開くToolStripMenuItem
+            // OpenToolStripMenuItem
             // 
-            this.開くToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.DBファイルToolStripMenuItem1,
-            this.フォルダーToolStripMenuItem});
-            this.開くToolStripMenuItem.Name = "開くToolStripMenuItem";
-            this.開くToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
-            this.開くToolStripMenuItem.Text = "開く";
+            this.OpenToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DBFileToolStripMenuItem1,
+            this.FolderToolStripMenuItem});
+            this.OpenToolStripMenuItem.Name = "OpenToolStripMenuItem";
+            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.OpenToolStripMenuItem.Text = "開く";
             // 
-            // DBファイルToolStripMenuItem1
+            // DBFileToolStripMenuItem1
             // 
-            this.DBファイルToolStripMenuItem1.Name = "DBファイルToolStripMenuItem1";
-            this.DBファイルToolStripMenuItem1.Size = new System.Drawing.Size(154, 26);
-            this.DBファイルToolStripMenuItem1.Text = "DBファイル";
-            this.DBファイルToolStripMenuItem1.Click += new System.EventHandler(this.DBファイルToolStripMenuItem1_Click);
+            this.DBFileToolStripMenuItem1.Name = "DBFileToolStripMenuItem1";
+            this.DBFileToolStripMenuItem1.Size = new System.Drawing.Size(224, 26);
+            this.DBFileToolStripMenuItem1.Text = "DBファイル";
+            this.DBFileToolStripMenuItem1.Click += new System.EventHandler(this.DBFileToolStripMenuItem1_Click);
             // 
-            // フォルダーToolStripMenuItem
+            // FolderToolStripMenuItem
             // 
-            this.フォルダーToolStripMenuItem.Name = "フォルダーToolStripMenuItem";
-            this.フォルダーToolStripMenuItem.Size = new System.Drawing.Size(154, 26);
-            this.フォルダーToolStripMenuItem.Text = "フォルダー";
-            this.フォルダーToolStripMenuItem.Click += new System.EventHandler(this.フォルダーToolStripMenuItem_Click);
+            this.FolderToolStripMenuItem.Name = "FolderToolStripMenuItem";
+            this.FolderToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.FolderToolStripMenuItem.Text = "フォルダー";
+            this.FolderToolStripMenuItem.Click += new System.EventHandler(this.FolderToolStripMenuItem_Click);
             // 
-            // 閉じるToolStripMenuItem
+            // CloseToolStripMenuItem
             // 
-            this.閉じるToolStripMenuItem.Name = "閉じるToolStripMenuItem";
-            this.閉じるToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
-            this.閉じるToolStripMenuItem.Text = "閉じる";
+            this.CloseToolStripMenuItem.Name = "CloseToolStripMenuItem";
+            this.CloseToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.CloseToolStripMenuItem.Text = "閉じる";
             // 
-            // 終了ToolStripMenuItem
+            // EndToolStripMenuItem
             // 
-            this.終了ToolStripMenuItem.Name = "終了ToolStripMenuItem";
-            this.終了ToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
-            this.終了ToolStripMenuItem.Text = "終了";
-            this.終了ToolStripMenuItem.Click += new System.EventHandler(this.終了ToolStripMenuItem_Click);
+            this.EndToolStripMenuItem.Name = "EndToolStripMenuItem";
+            this.EndToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.EndToolStripMenuItem.Text = "終了";
+            this.EndToolStripMenuItem.Click += new System.EventHandler(this.EndToolStripMenuItem_Click);
             // 
             // progressBar1
             // 
@@ -261,7 +261,7 @@
             this.label1.Font = new System.Drawing.Font("Yu Gothic UI", 19.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label1.Location = new System.Drawing.Point(12, 506);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(182, 46);
+            this.label1.Size = new System.Drawing.Size(177, 45);
             this.label1.TabIndex = 10;
             this.label1.Text = "読み込み中";
             this.label1.Visible = false;
@@ -306,12 +306,12 @@
         public DataGridView match_list;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem ファイルToolStripMenuItem;
-        private ToolStripMenuItem 開くToolStripMenuItem;
-        private ToolStripMenuItem 閉じるToolStripMenuItem;
-        private ToolStripMenuItem 終了ToolStripMenuItem;
+        private ToolStripMenuItem OpenToolStripMenuItem;
+        private ToolStripMenuItem CloseToolStripMenuItem;
+        private ToolStripMenuItem EndToolStripMenuItem;
         private ProgressBar progressBar1;
-        private ToolStripMenuItem DBファイルToolStripMenuItem1;
-        private ToolStripMenuItem フォルダーToolStripMenuItem;
+        private ToolStripMenuItem DBFileToolStripMenuItem1;
+        private ToolStripMenuItem FolderToolStripMenuItem;
         private ContextMenuStrip CellRightClickMenu;
         private ToolStripMenuItem 削除ToolStripMenuItem;
         private ToolStripMenuItem 開くToolStripMenuItem1;
