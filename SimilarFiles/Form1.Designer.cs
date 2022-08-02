@@ -76,8 +76,8 @@
             this.match_list.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.match_list.Size = new System.Drawing.Size(1262, 473);
             this.match_list.TabIndex = 1;
-            this.match_list.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.match_list_CellMouseDoubleClick);
-            this.match_list.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.match_list_CellMouseDown);
+            this.match_list.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.MatchList_CellMouseDoubleClick);
+            this.match_list.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.MatchList_CellMouseDown);
             // 
             // Column1
             // 
@@ -123,7 +123,7 @@
             this.reset_button.TabIndex = 3;
             this.reset_button.Text = "リセット";
             this.reset_button.UseVisualStyleBackColor = true;
-            this.reset_button.Click += new System.EventHandler(this.reset_button_Click);
+            this.reset_button.Click += new System.EventHandler(this.ResetButton_Click);
             // 
             // remove_button
             // 
@@ -134,7 +134,7 @@
             this.remove_button.TabIndex = 4;
             this.remove_button.Text = "削除";
             this.remove_button.UseVisualStyleBackColor = true;
-            this.remove_button.Click += new System.EventHandler(this.remove_button_Click);
+            this.remove_button.Click += new System.EventHandler(this.RemoveButton_Click);
             // 
             // add_button
             // 
@@ -145,7 +145,7 @@
             this.add_button.TabIndex = 5;
             this.add_button.Text = "追加";
             this.add_button.UseVisualStyleBackColor = true;
-            this.add_button.Click += new System.EventHandler(this.add_button_Click);
+            this.add_button.Click += new System.EventHandler(this.AddButton_Click);
             // 
             // start_button
             // 
@@ -155,7 +155,7 @@
             this.start_button.TabIndex = 6;
             this.start_button.Text = "開始";
             this.start_button.UseVisualStyleBackColor = true;
-            this.start_button.Click += new System.EventHandler(this.start_button_Click);
+            this.start_button.Click += new System.EventHandler(this.StartButton_Click);
             // 
             // stop_button
             // 
@@ -165,7 +165,7 @@
             this.stop_button.TabIndex = 7;
             this.stop_button.Text = "停止";
             this.stop_button.UseVisualStyleBackColor = true;
-            this.stop_button.Click += new System.EventHandler(this.stop_button_Click);
+            this.stop_button.Click += new System.EventHandler(this.StopButton_Click);
             // 
             // menuStrip1
             // 
@@ -284,7 +284,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "search_list";
             this.Text = "SimilarFiles";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.search_list_FormClosing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SearchList_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.match_list)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.folder_list_table)).EndInit();
             this.menuStrip1.ResumeLayout(false);

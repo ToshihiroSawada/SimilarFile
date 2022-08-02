@@ -16,37 +16,35 @@ namespace SimilarFiles
             folder_list_table.AllowUserToAddRows = false;
         }
 
-        private string select_folder()
+        private static string SelectFolder()
         {
-            using (var fbd = new FolderBrowserDialog()
+            using var fbd = new FolderBrowserDialog()
             {
                 Description = "フォルダを選択してください",
                 SelectedPath = @""
-            })
+            };
+            if (fbd.ShowDialog() != DialogResult.OK)
             {
-                if (fbd.ShowDialog() != DialogResult.OK)
-                {
-                    return null;
-                }
-
-                return fbd.SelectedPath;
+                return null;
             }
+
+            return fbd.SelectedPath;
         }
 
-        private void add_button_Click()
+        private void AddButton_Click()
         {
-            var sp = select_folder();
+            var sp = SelectFolder();
             if (sp != null)
             {
                 folder_list_table.Rows.Add(sp);
             }
         }
-        private void add_button_Click(object sender, EventArgs e)
+        private void AddButton_Click(object sender, EventArgs e)
         {
-            add_button_Click();
+            AddButton_Click();
         }
 
-        private void remove_button_Click(object sender, EventArgs e)
+        private void RemoveButton_Click(object sender, EventArgs e)
         {
             foreach (DataGridViewRow r in folder_list_table.SelectedRows)
             {
@@ -57,18 +55,28 @@ namespace SimilarFiles
             }
         }
 
-        private void reset_button_Click(object sender, EventArgs e)
+        private void ResetButton_Click(object sender, EventArgs e)
         {
             folder_list_table.Rows.Clear();
         }
 
-        private void start_button_Click(object sender, EventArgs e)
+        private void StartButton_Click(object sender, EventArgs e)
         {
-            start_button_Click(sender, e, match_list);
+            StartButton_Click(sender, e, match_list);
         }
 
-        private void start_button_Click(object sender, EventArgs e, DataGridView match_list)
+        private void StartButton_Click(object sender, EventArgs e, DataGridView match_list)
         {
+            if (sender is null)
+            {
+                throw new ArgumentNullException(nameof(sender));
+            }
+
+            if (e is null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
             PSKILL = false;
             if (folder_list_table.RowCount < 1)
             {
@@ -102,7 +110,7 @@ namespace SimilarFiles
             Close();
         }
 
-        private void stop_button_Click(object sender, EventArgs e)
+        private void StopButton_Click(object sender, EventArgs e)
         {
             PSKILL = true;
             label1.Text = "処理停止中。しばらくお待ちください。";
@@ -136,135 +144,133 @@ namespace SimilarFiles
             label1.Text = "ファイル調査中...";
             //ファイルをDBへ追加
             var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = "data.db" };
-            using (var cn = new SQLiteConnection(sqlCSB.ToString()))
+            using var cn = new SQLiteConnection(sqlCSB.ToString());
+            cn.Open();
+            using (var cmd = new SQLiteCommand(cn))
             {
-                cn.Open();
-                using (var cmd = new SQLiteCommand(cn))
-                {
-                    cmd.CommandText = @"
+                cmd.CommandText = @"
                         CREATE TABLE IF NOT EXISTS file_hash(
                             path TEXT PRIMARY KEY,
                             name TEXT NOT NULL,
                             hash TEXT NOT NULL
                         )
                     ";
-                    cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
 
-                    string[] fileList;
-                    foreach (string folder in folder_list)
+                string[] fileList;
+                foreach (string folder in folder_list)
+                {
+                    try
                     {
-                        try
-                        {
-                            fileList = Directory.GetFiles(folder);
-                            files.AddRange(fileList);
-                        }
-                        catch
-                        {
-                            continue;
-                        }
-
+                        fileList = Directory.GetFiles(folder);
+                        files.AddRange(fileList);
                     }
-                    string[] getHashFileList;
-                    foreach (string folder in folders)
+                    catch
                     {
+                        continue;
+                    }
+
+                }
+                string[] getHashFileList;
+                foreach (string folder in folders)
+                {
+                    try
+                    {
+                        getHashFileList = Directory.GetFiles(
+                            folder, "*", SearchOption.TopDirectoryOnly
+                        );
+                    }
+                    catch (Exception err)
+                    {
+                        Debug.Print("3 continue!! : " + folder);
+                        Debug.Print(err.ToString());
+                        continue;
+                    }
+                    foreach (string st in getHashFileList)
+                    {
+                        getHashFiles.Add(st);
+                    }
+                }
+                progressBar1.Value = 0;
+                progressBar1.Maximum = getHashFiles.Count;
+                progressBar1.Visible = true;
+                progressBar1.Style = ProgressBarStyle.Continuous;
+                //ファイルハッシュ化し、listに追加
+                var j = 0;
+                foreach (var file in getHashFiles)
+                {
+                    progressBar1.Value += 1;
+                    var data = await Task.Run(() =>
+                    {
+                        var data = new string[3];
                         try
                         {
-                            getHashFileList = Directory.GetFiles(
-                                folder, "*", SearchOption.TopDirectoryOnly
-                            );
+                            string file_name = Path.GetFileName(file);
+                            if (file_name == "desktop.ini")
+                            {
+                                return data;
+                            }
+                            var setFile = new FileInfo(file);
+                            long fileSize = setFile.Length;
+                            if (fileSize == 0)
+                            {
+                                return data;
+                            }
+                            FileStream fs = new(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            using MD5 ha = MD5.Create();
+                            var hash = ha.ComputeHash(fs);
+                            string hash_text = "";
+
+
+                            hash_text = Convert.ToBase64String(hash);
+                            data[0] = file;
+                            data[1] = file_name;
+                            data[2] = hash_text;
+                            ha.Clear();
+                            fs.Close();
+                            return data;
                         }
                         catch (Exception err)
                         {
-                            Debug.Print("3 continue!! : " + folder);
                             Debug.Print(err.ToString());
-                            continue;
+                            return data;
                         }
-                        foreach (string st in getHashFileList)
-                        {
-                            getHashFiles.Add(st);
-                        }
-                    }
-                    progressBar1.Value = 0;
-                    progressBar1.Maximum = getHashFiles.Count;
-                    progressBar1.Visible = true;
-                    progressBar1.Style = ProgressBarStyle.Continuous;
-                    //ファイルハッシュ化し、listに追加
-                    var j = 0;
-                    foreach (var file in getHashFiles)
+                    });
+
+                    //ProgressBarの値を増加させる
+                    j++;
+                    if (PSKILL == true)
                     {
-                        progressBar1.Value += 1;
-                        var data = await Task.Run(() =>
-                        {
-                            var data = new string[3];
-                            try
-                            {
-                                string file_name = Path.GetFileName(file);
-                                if (file_name == "desktop.ini")
-                                {
-                                    return data;
-                                }
-                                var setFile = new FileInfo(file);
-                                long fileSize = setFile.Length;
-                                if (fileSize == 0)
-                                {
-                                    return data;
-                                }
-                                FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                                using MD5 ha = MD5.Create();
-                                var hash = ha.ComputeHash(fs);
-                                string hash_text = "";
+                        break;
+                    }
 
-
-                                hash_text = Convert.ToBase64String(hash);
-                                data[0] = file;
-                                data[1] = file_name;
-                                data[2] = hash_text;
-                                ha.Clear();
-                                fs.Close();
-                                return data;
-                            }
-                            catch (Exception err)
-                            {
-                                Debug.Print(err.ToString());
-                                return data;
-                            }
-                        });
-
-                        //ProgressBarの値を増加させる
-                        j++;
-                        if (PSKILL == true)
-                        {
-                            break;
-                        }
-
-                        try
-                        {
-                            cmd.CommandText = $@"
+                    try
+                    {
+                        cmd.CommandText = $@"
                                 INSERT INTO file_hash
                                 VALUES ('{data[0]}', '{data[1]}', '{data[2]}')
                         ";
 
-                            cmd.ExecuteNonQuery();
-                        }
-                        catch (Exception err)
-                        {
-                            Debug.Print(err.ToString());
-                            Debug.Print("5 continue!! : " + string.Join(", ", data));
-                            continue;
-                        }
+                        cmd.ExecuteNonQuery();
                     }
-                    cmd.Dispose();
-                    cn.Close();
+                    catch (Exception err)
+                    {
+                        Debug.Print(err.ToString());
+                        Debug.Print("5 continue!! : " + string.Join(", ", data));
+                        continue;
+                    }
                 }
-
-                ReadDBData(sqlCSB);
-                progressBar1.Visible = false;
-                label1.Visible = false;
-                start_button.Enabled = true;
-                add_button.Enabled = true;
-                remove_button.Enabled = true;
-                reset_button.Enabled = true;
+                cmd.Dispose();
+                cn.Close();
             }
+
+            ReadDBData(sqlCSB);
+            progressBar1.Visible = false;
+            label1.Visible = false;
+            start_button.Enabled = true;
+            add_button.Enabled = true;
+            remove_button.Enabled = true;
+            reset_button.Enabled = true;
         }
 
         private void ReadDBData(SQLiteConnectionStringBuilder sqlCSB)
@@ -289,7 +295,7 @@ namespace SimilarFiles
 
                 SQLiteDataReader dr = cmd.ExecuteReader();
 
-                List<string[]> list = new List<string[]>();
+                List<string[]> list = new();
                 try
                 {
                     while (dr.Read())
@@ -312,9 +318,9 @@ namespace SimilarFiles
             progressBar1.Visible = false;
         }
 
-        private void match_list_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void MatchList_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            DataGridViewCell onePreviousCell = null;
+            DataGridViewCell onePreviousCell;
             try
             {
                 onePreviousCell = match_list.Rows[e.RowIndex].Cells[e.ColumnIndex];
@@ -358,10 +364,10 @@ namespace SimilarFiles
 
         private void フォルダーToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            add_button_Click();
+            AddButton_Click();
         }
 
-        private void match_list_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        private void MatchList_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
@@ -374,8 +380,8 @@ namespace SimilarFiles
         private async Task<List<string>> GetAllDirectories(List<string> argList)
         {
             //ファイルハッシュを取得しないスキップリスト
-            //var skipList = new List<string> { @"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
-            var skipList = new List<string>();
+            var skipList = new List<string> { @"C:\Users\Public", @"C:\Users\Default", @"C:\Users\All Users", @"C:\Windows", @"C:\Power_On_and_WOL", @"C:\Intel", @"C:\Driver", @"C:\Program Files", @"C:\Program Files (x86)", @"C:\ProgramData", @"C:\Recovery", "System Volume Information" };
+            //var skipList = new List<string>();
             var pattern = @".*AppData.*|.*\$.*";
             var list = new List<string>();
             var regex = new Regex(pattern);
@@ -435,12 +441,12 @@ namespace SimilarFiles
             return list;
         }
 
-        private void search_list_FormClosing(object sender, FormClosingEventArgs e)
+        private void SearchList_FormClosing(object sender, FormClosingEventArgs e)
         {
-            DialogResult dr = MessageBox.Show("保存しますか？", "確認", MessageBoxButtons.YesNo);
+            DialogResult dr = MessageBox.Show("調査結果を保存しますか？", "確認", MessageBoxButtons.YesNo);
             if (dr == DialogResult.Yes)
             {
-                using (var sfd = new SaveFileDialog()
+                using var sfd = new SaveFileDialog()
                 {
                     Title = "保存先を選択してください",
                     FileName = "data.db",
@@ -448,14 +454,12 @@ namespace SimilarFiles
                     CheckPathExists = true,
                     Filter = "DBファイル(*.db)|*.db",
                     InitialDirectory = @"",
-                })
+                };
+                if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    if (sfd.ShowDialog() == DialogResult.OK)
-                    {
-                        File.Copy(@"./data.db", sfd.FileName);
-                    }
-                    Debug.Print(sfd.FileName);
+                    File.Copy(@"./data.db", sfd.FileName);
                 }
+                Debug.Print(sfd.FileName);
             }
         }
     }
