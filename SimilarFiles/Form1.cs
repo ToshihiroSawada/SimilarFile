@@ -25,7 +25,7 @@ namespace SimilarFiles
             };
             if (fbd.ShowDialog() != DialogResult.OK)
             {
-                return null;
+                return "";
             }
 
             return fbd.SelectedPath;
@@ -34,7 +34,7 @@ namespace SimilarFiles
         private void AddButton_Click()
         {
             var sp = SelectFolder();
-            if (sp != null)
+            if (sp != "")
             {
                 folder_list_table.Rows.Add(sp);
             }
