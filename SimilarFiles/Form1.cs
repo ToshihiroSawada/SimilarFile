@@ -2,11 +2,13 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Data.SQLite;
 using System.Text.RegularExpressions;
+using NLog;
 
 namespace SimilarFiles
 {
     public partial class SearchList : Form
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public bool PSKILL = false;
 
         public SearchList()
@@ -83,13 +85,14 @@ namespace SimilarFiles
                 return;
             }
             match_list.Rows.Clear();
+            //前回調査時のDBファイルを消すか消さないか
             string db_path = "./data.db";
             DialogResult dr = MessageBox.Show("前回の結果を削除しますか？", "確認", MessageBoxButtons.YesNo);
             if (dr == DialogResult.Yes)
             {
                 if (File.Exists(db_path))
                 {
-                    File.Delete(db_path);
+            File.Delete(db_path);
                 }
             }
 
@@ -138,7 +141,7 @@ namespace SimilarFiles
             }
             catch (Exception err)
             {
-                Debug.Print(err.ToString());
+                logger.Error(err);
             }
 
             label1.Text = "ファイル調査中...";
@@ -165,8 +168,9 @@ namespace SimilarFiles
                         fileList = Directory.GetFiles(folder);
                         files.AddRange(fileList);
                     }
-                    catch
+                    catch(Exception err)
                     {
+                        logger.Error(err);
                         continue;
                     }
 
@@ -182,8 +186,8 @@ namespace SimilarFiles
                     }
                     catch (Exception err)
                     {
-                        Debug.Print("3 continue!! : " + folder);
-                        Debug.Print(err.ToString());
+                        logger.Debug(folder);
+                        logger.Debug(err);
                         continue;
                     }
                     foreach (string st in getHashFileList)
@@ -232,7 +236,7 @@ namespace SimilarFiles
                         }
                         catch (Exception err)
                         {
-                            Debug.Print(err.ToString());
+                            logger.Error(err);
                             return data;
                         }
                     });
@@ -255,8 +259,8 @@ namespace SimilarFiles
                     }
                     catch (Exception err)
                     {
-                        Debug.Print(err.ToString());
-                        Debug.Print("5 continue!! : " + string.Join(", ", data));
+                        logger.Error(err);
+                        logger.Error(string.Join(", ", data));
                         continue;
                     }
                 }
@@ -310,7 +314,7 @@ namespace SimilarFiles
                 }
                 catch (Exception err)
                 {
-                    Debug.Print(err.ToString());
+                    logger.Error(err);
                 }
                 cmd.Dispose();
             }
@@ -327,7 +331,7 @@ namespace SimilarFiles
             }
             catch (Exception err)
             {
-                Debug.Print(err.ToString());
+                logger.Error(err);
                 return;
             }
             try
@@ -337,7 +341,7 @@ namespace SimilarFiles
             }
             catch (Exception err)
             {
-                Debug.Print(err.ToString());
+                logger.Error(err);
             }
         }
 
@@ -407,7 +411,7 @@ namespace SimilarFiles
                 }
                 catch (Exception err)
                 {
-                    Debug.Print(err.ToString());
+                    logger.Error(err.ToString());
                     continue;
                 }
                 if (matchFlug)
@@ -423,9 +427,9 @@ namespace SimilarFiles
                         path, "*", SearchOption.TopDirectoryOnly
                     ));
                 }
-                catch
+                catch (Exception err)
                 {
-                    Debug.Print("100 conrinue!! : " + path);
+                    logger.Error(err, path);
                     continue;
                 }
                 if (PSKILL == true)
@@ -459,7 +463,7 @@ namespace SimilarFiles
                 {
                     File.Copy(@"./data.db", sfd.FileName);
                 }
-                Debug.Print(sfd.FileName);
+                logger.Error(sfd.FileName);
             }
         }
 
