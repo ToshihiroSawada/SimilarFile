@@ -85,16 +85,6 @@ namespace SimilarFiles
                 return;
             }
             match_list.Rows.Clear();
-            //前回調査時のDBファイルを消すか消さないか
-            string db_path = "./data.db";
-            DialogResult dr = MessageBox.Show("前回の結果を削除しますか？", "確認", MessageBoxButtons.YesNo);
-            if (dr == DialogResult.Yes)
-            {
-                if (File.Exists(db_path))
-                {
-            File.Delete(db_path);
-                }
-            }
 
             //stop_button以外クリックできないようにする
             start_button.Enabled = false;
@@ -347,23 +337,56 @@ namespace SimilarFiles
 
         private void DBFileToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            string path;
-            using (var ofd = new OpenFileDialog()
+            try
             {
-                Title = "DBファイルを選択してください",
-                Filter = "DBファイル(*.db)|*.db",
-                InitialDirectory = @"",
-            })
-            {
-                if (ofd.ShowDialog() != DialogResult.OK)
+                string opendb_path;
+                using (var ofd = new OpenFileDialog()
                 {
-                    return;
+                    Title = "DBファイルを選択してください",
+                    Filter = "DBファイル(*.db)|*.db",
+                    InitialDirectory = @"",
+                })
+                {
+                    if (ofd.ShowDialog() != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        opendb_path = ofd.FileName;
+                        Console.Write(opendb_path);
+                    }
                 }
-                path = ofd.FileName;
-            }
 
-            var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = path };
-            ReadDBData(sqlCSB);
+                var sqlCSB = new SQLiteConnectionStringBuilder { DataSource = "./data.db" };
+                var margeDB = new SQLiteConnectionStringBuilder { DataSource = opendb_path };
+                using var cn = new SQLiteConnection(sqlCSB.ToString());
+                cn.Open();
+                using (var cmd = new SQLiteCommand(cn))
+                {
+                    cmd.CommandText = @$"
+                        CREATE TABLE IF NOT EXISTS file_hash(
+                            path TEXT PRIMARY KEY,
+                            name TEXT NOT NULL,
+                            hash TEXT NOT NULL
+                        );
+                        ATTACH DATABASE '{margeDB}' as db1;
+                        INSERT INTO main.file_hash (path, name, hash)
+                            SELECT path, name, hash 
+                            FROM db1.file_hash
+                        ;
+                        DETTACH DATABASE db1;
+                    ";
+                    cmd.ExecuteNonQuery();
+
+                }
+                cn.Close();
+                ReadDBData(sqlCSB);
+            }
+            catch(Exception err)
+            {
+                logger.Error(err);
+            }
         }
 
         private void FolderToolStripMenuItem_Click(object sender, EventArgs e)
@@ -411,7 +434,7 @@ namespace SimilarFiles
                 }
                 catch (Exception err)
                 {
-                    logger.Error(err.ToString());
+                    logger.Debug(err.ToString());
                     continue;
                 }
                 if (matchFlug)
@@ -463,7 +486,15 @@ namespace SimilarFiles
                 {
                     File.Copy(@"./data.db", sfd.FileName);
                 }
-                logger.Error(sfd.FileName);
+                else
+                {
+                    File.Delete(@"./data.db");
+                }
+                logger.Debug(sfd.FileName);
+            }
+            else
+            {
+                File.Delete(@"./data.db");
             }
         }
 
