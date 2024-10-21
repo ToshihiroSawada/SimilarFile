@@ -1,3 +1,5 @@
+using NLog;
+
 namespace SimilarFiles
 {
     internal static class Program
@@ -14,4 +16,11 @@ namespace SimilarFiles
             Application.Run(new SearchList());
         }
     }
+
+    public static class Globals
+    {
+        public static bool PSKILL { get; set; } = false;
+        public static readonly Logger LOGGER = LogManager.GetCurrentClassLogger();
+    }
+
 }
